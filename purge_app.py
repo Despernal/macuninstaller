@@ -10,7 +10,7 @@ from pathlib import Path
 
 
 def read_plist(app_path):
-    """This function returns a tuple which contains (bundle_identifier , bundle_name , bundle_signature) of an app"""
+    """This function returns a set containing the informations of an app."""
 
     try:
         plist_path = Path(app_path, "Contents/Info.plist").resolve(strict=True)
@@ -20,8 +20,11 @@ def read_plist(app_path):
 
     plist_content = plistlib.loads(plist_path.read_bytes())
 
+    # Relevant identifiers to read
     identifiers = ["CFBundleIdentifier", "CFBundleName", "CFBundleSignature"]
     relevant_infos = {plist_content.get(id) for id in identifiers}
+
+    # Removing not found values
     relevant_infos.discard(None)
     relevant_infos.discard('????')
 
@@ -33,6 +36,7 @@ def scan(path_to_app):
     hints = read_plist(path_to_app)
     print("[*] Found following hints : {}".format(hints))
 
+    # Usual directories for app-related files
     search_directories = {
         Path.home() / "Library",
         "/Library",
@@ -46,6 +50,7 @@ def scan(path_to_app):
     for directory in search_directories:
         print("[i] Searching in {}...".format(directory))
 
+        # REVIEW: Not efficient
         subdirs = Path(directory).glob("**")
 
         for dir in subdirs:
