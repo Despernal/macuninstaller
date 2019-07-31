@@ -42,24 +42,24 @@ def read_plist(app_path):
 def path_walk(start_path, hints):
     """Equivalent to `os.walk` using pathlib."""
 
-    def check_hints(str_path):
-        return any(h in str_path for h in hints)
+    def check_hints(path_name):
+        return any(h in str(path_name) for h in hints)
 
-    names = start_path.iterdir()
+    names = list(start_path.iterdir())
 
-    dirs = (node for node in names if node.is_dir() is True)
-    nondirs = (node for node in names if node.is_dir() is False)
+    dirs = (node for node in names if node.is_dir())
+    nondirs = (node for node in names if node.is_file())
 
     for name in dirs:
-        if check_hints(str(name)):
+        if check_hints(name):
             yield name
 
         elif not name.is_symlink():
-            for x in path_walk(name, hints):
-                yield x
+            for next in path_walk(name, hints):
+                yield next
 
     for name in nondirs:
-        if check_hints(str(name)):
+        if check_hints(name):
             yield name
 
 
